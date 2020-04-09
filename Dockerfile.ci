@@ -7,6 +7,7 @@ COPY . /build
 
 RUN ls -hal
 RUN go build -ldflags "-linkmode external -extldflags -static" ./webserver.go
+RUN strip webserver
 
 
 FROM scratch

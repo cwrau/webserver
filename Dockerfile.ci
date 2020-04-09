@@ -1,0 +1,16 @@
+#    golang:1.14.1-buster
+FROM golang@sha256:9d67058156a82fb59df9a734e3e9df6bfc73413bd4d5e279bbea4cdd04357f4c as build
+
+WORKDIR /build
+
+COPY . /build
+
+RUN ls -hal
+RUN go build -ldflags "-linkmode external -extldflags -static" ./webserver.go
+
+
+FROM scratch
+
+CMD ["/webserver"]
+COPY --from=build /build/webserver /webserver
+

@@ -1,4 +1,4 @@
-module 4allportal.com/webserver
+module cwrau.io/webserver
 
 go 1.14
 

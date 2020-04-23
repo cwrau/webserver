@@ -52,6 +52,12 @@ func main() {
 		return nil
 	})
 
+	usedMemory := 0
+	for _, file := range files {
+		usedMemory += file.bytesReader.Len()
+	}
+	log.Infof("Using %s memory", bytefmt.ByteSize(uint64(usedMemory)))
+
 	if root, isSet := os.LookupEnv("ROOT"); isSet {
 		if file, exists := files[root]; exists {
 			log.Infof("Parameter ROOT found. Additionally routing %s under /", root)

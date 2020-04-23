@@ -42,7 +42,6 @@ func main() {
 			fileBytes, err := ioutil.ReadFile(path)
 			if err != nil {
 				log.Fatalf("Couldn't read file: %s: %s", path, err)
-				return nil
 			}
 
 			files[filePath] = file{
@@ -54,9 +53,11 @@ func main() {
 	})
 
 	if root, isSet := os.LookupEnv("ROOT"); isSet {
-		if file, exists := files["/"+root]; exists {
-			log.Infof("Parameter ROOT found. Additionally routing /%s under /", root)
+		if file, exists := files[root]; exists {
+			log.Infof("Parameter ROOT found. Additionally routing %s under /", root)
 			files["/"] = file
+		} else {
+			log.Fatalf("Parameter ROOT (%s) found, but no corresponding file found.", root)
 		}
 	}
 

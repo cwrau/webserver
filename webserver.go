@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"code.cloudfoundry.org/bytefmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ var files map[string]file
 func fileHandler(w http.ResponseWriter, r *http.Request) {
 	if file, found := files[r.URL.Path]; found {
 		http.ServeContent(w, r, r.URL.Path, file.modTime, file.bytesReader)
+		_, _ = file.bytesReader.Seek(0, io.SeekStart)
 	} else {
 		if r.URL.Path == "/" {
 			w.WriteHeader(http.StatusNoContent)

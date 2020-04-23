@@ -21,13 +21,9 @@ type file struct {
 var files map[string]file
 
 func fileHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/" {
-		w.WriteHeader(http.StatusNoContent)
-	} else if foundFile, ok := files[r.URL.Path]; ok {
-		//log.Infof("Serving %s", "/serve"+r.URL.Path)
-		http.ServeContent(w, r, r.URL.Path, foundFile.modTime, bytes.NewReader(foundFile.bytes))
+	if file, found := files[r.URL.Path]; found {
+		http.ServeContent(w, r, r.URL.Path, file.modTime, bytes.NewReader(file.bytes))
 	} else {
-		//log.Infof("Not found: %s", r.URL.Path)
 		http.NotFound(w, r)
 	}
 }
@@ -41,7 +37,7 @@ func main() {
 			log.Infof("Found file: %s, size: %s, modTime: %s", filePath, bytefmt.ByteSize(uint64(info.Size())), info.ModTime())
 			fileBytes, err := ioutil.ReadFile(path)
 			if err != nil {
-				//log.Errorf("Couldn't read file: %s: %s", path, err)
+				log.Fatalf("Couldn't read file: %s: %s", path, err)
 				return nil
 			}
 
@@ -52,6 +48,13 @@ func main() {
 		}
 		return nil
 	})
+
+	if root, isSet := os.LookupEnv("ROOT"); isSet {
+		if file, exists := files["/"+root]; exists {
+			log.Infof("Parameter ROOT found. Additionally routing /%s under /", root)
+			files["/"] = file
+		}
+	}
 
 	http.HandleFunc("/", fileHandler)
 	log.Info("Starting server on port 8080")

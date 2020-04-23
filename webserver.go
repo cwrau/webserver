@@ -14,17 +14,21 @@ import (
 )
 
 type file struct {
-	bytes   []byte
-	modTime time.Time
+	bytesReader *bytes.Reader
+	modTime     time.Time
 }
 
 var files map[string]file
 
 func fileHandler(w http.ResponseWriter, r *http.Request) {
 	if file, found := files[r.URL.Path]; found {
-		http.ServeContent(w, r, r.URL.Path, file.modTime, bytes.NewReader(file.bytes))
+		http.ServeContent(w, r, r.URL.Path, file.modTime, file.bytesReader)
 	} else {
-		http.NotFound(w, r)
+		if r.URL.Path == "/" {
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			http.NotFound(w, r)
+		}
 	}
 }
 
@@ -42,8 +46,8 @@ func main() {
 			}
 
 			files[filePath] = file{
-				bytes:   fileBytes,
-				modTime: info.ModTime(),
+				bytesReader: bytes.NewReader(fileBytes),
+				modTime:     info.ModTime(),
 			}
 		}
 		return nil

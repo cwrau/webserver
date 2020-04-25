@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	path2 "path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -53,7 +52,7 @@ func main() {
 				modTime:     info.ModTime(),
 			}
 			if indexIsSet && strings.HasSuffix(filePath, "index.html") {
-				files[path2.Dir(filePath)+"/"] = files[filePath]
+				files[strings.ReplaceAll(filePath, "index.html", "")] = files[filePath]
 			}
 		}
 		return nil

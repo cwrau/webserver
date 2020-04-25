@@ -11,7 +11,7 @@ RUN strip webserver
 
 FROM scratch
 
-ENV ROOT /index.html
+ENV INDEX TRUE
 CMD ["/webserver"]
 COPY --from=build /build/webserver /webserver
 

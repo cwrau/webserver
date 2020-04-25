@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	path2 "path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -37,6 +38,7 @@ func fileHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
 	files = make(map[string]file)
+	indexIsSet := strings.EqualFold(os.Getenv("INDEX"), "true")
 	_ = filepath.Walk("/serve", func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() == false {
 			filePath := strings.ReplaceAll(path, "/serve", "")
@@ -50,6 +52,9 @@ func main() {
 				bytesReader: bytes.NewReader(fileBytes),
 				modTime:     info.ModTime(),
 			}
+			if indexIsSet && strings.HasSuffix(filePath, "index.html") {
+				files[path2.Dir(filePath)+"/"] = files[filePath]
+			}
 		}
 		return nil
 	})
@@ -60,13 +65,8 @@ func main() {
 	}
 	log.Infof("Using %s memory", bytefmt.ByteSize(uint64(usedMemory)))
 
-	if root, isSet := os.LookupEnv("ROOT"); isSet {
-		if file, exists := files[root]; exists {
-			log.Infof("Parameter ROOT found. Additionally routing %s under /", root)
-			files["/"] = file
-		} else {
-			log.Fatalf("Parameter ROOT (%s) found, but no corresponding file found.", root)
-		}
+	if indexIsSet {
+		log.Info("Parameter 'INDEX' set to 'true'. Routing all '*/' folders to their corresponding '*/index.html', if they exist")
 	}
 
 	http.HandleFunc("/", fileHandler)

@@ -1,6 +1,6 @@
 FROM scratch
 
-ENV ROOT /index.html
+ENV INDEX TRUE
 CMD ["/webserver"]
 COPY webserver /webserver
 
